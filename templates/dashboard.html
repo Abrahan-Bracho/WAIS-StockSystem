@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - WAIS StockSystem{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <!-- Saludo personalizado usando la sesión -->
+        <h2 class="fw-bold">Welcome back, {{ session.get('username', 'Team Member') }}!</h2>
+        <p class="text-muted">Here is the overview of your warehouse operations today.</p>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- TARJETAS DE ACCESO RÁPIDO Y ESTADÍSTICAS   -->
+<!-- ========================================== -->
+<div class="row mb-4">
+    
+    <!-- Tarjeta: Inventario -->
+    <div class="col-md-4 mb-3">
+        <a href="{{ url_for('inventory') }}" class="text-decoration-none">
+            <div class="card shadow-sm h-100 border-0 border-start border-primary border-4 text-center p-3 table-hover transition-card">
+                <div class="card-body">
+                    
+                    <!-- LÓGICA DE ICONO EXTERNO + FALLBACK -->
+                    <div class="mb-3" style="height: 64px;">
+                        <!-- Reemplaza el src con el link directo al .png o .svg -->
+                        <img src="https://images.icon-icons.com/945/PNG/512/Office_-12_icon-icons.com_73953.png" 
+                             alt="Inventory" style="width: 64px; height: 64px;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        
+                        <!-- Este emoji está oculto por defecto, solo se muestra si el onerror se activa -->
+                        <h1 class="display-4 text-primary mb-0" style="display: none;">📦</h1>
+                    </div>
+
+                    <h5 class="card-title fw-bold text-dark">Inventory</h5>
+                    
+                    <!-- Estadística insertada aquí -->
+                    <span class="badge bg-primary mb-2">{{ total_products }} Active Items</span>
+                    
+                    <p class="card-text text-muted small">Manage products, stock levels, and SKUs.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Tarjeta: Transacciones -->
+    <div class="col-md-4 mb-3">
+        <a href="{{ url_for('transactions') }}" class="text-decoration-none">
+            <div class="card shadow-sm h-100 border-0 border-start border-success border-4 text-center p-3 table-hover transition-card">
+                <div class="card-body">
+                    
+                    <div class="mb-3" style="height: 64px;">
+                        <img src="https://images.icon-icons.com/47/PNG/128/files_manager_history_10109.png" 
+                             alt="Audit Trail" style="width: 64px; height: 64px;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <h1 class="display-4 text-success mb-0" style="display: none;">🔄</h1>
+                    </div>
+
+                    <h5 class="card-title fw-bold text-dark">Audit Trail</h5>
+                    <span class="badge bg-success mb-2">{{ total_movements }} Total Records</span>
+                    <p class="card-text text-muted small">Search the full history of IN/OUT movements.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Tarjeta: Staff (Protegida por RBAC) -->
+    {% if session.get('role') in ['Manager', 'Supervisor'] %}
+    <div class="col-md-4 mb-3">
+        <a href="{{ url_for('workers') }}" class="text-decoration-none">
+            <div class="card shadow-sm h-100 border-0 border-start border-dark border-4 text-center p-3 table-hover transition-card">
+                <div class="card-body">
+                    
+                    <div class="mb-3" style="height: 64px;">
+                        <img src="https://images.icon-icons.com/632/PNG/512/users_icon-icons.com_57999.png" 
+                             alt="Staff" style="width: 64px; height: 64px;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <h1 class="display-4 text-dark mb-0" style="display: none;">👥</h1>
+                    </div>
+
+                    <h5 class="card-title fw-bold text-dark">Staff Management</h5>
+                    <span class="badge bg-dark mb-2">{{ total_staff }} Active Users</span>
+                    <p class="card-text text-muted small">Control user access and team roles.</p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        {% if has_low_stock %}
+            <div class="alert alert-danger mb-0 d-flex justify-content-between align-items-center">
+                <span>⚠️ Atención: Hay artículos con inventario bajo.</span>
+                <a href="{{ url_for('low_stock_report') }}" class="btn btn-sm btn-outline-danger">Ver Reporte</a>
+            </div>
+        {% else %}
+            <div class="alert alert-success mb-0">
+                ✅ Inventario en niveles óptimos.
+            </div>
+        {% endif %}
+    </div>
+</div>
+<!-- ========================================== -->
+<!-- SECCIÓN: ÚLTIMOS 10 MOVIMIENTOS            -->
+<!-- ========================================== -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Recent Activity</h5>
+                <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light text-muted small">
+                            <tr>
+                                <th class="ps-4">Time</th>
+                                <th>User</th>
+                                <th>Operation</th>
+                                <th>SKU</th>
+                                <th>Action Detail</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transactions %}
+                            <tr>
+                                <!-- Reutilizamos tu excelente filtro localtime de ayer -->
+                                <td class="ps-4 align-middle text-muted small">{{ tx.timestamp | localtime }}</td>
+                                <td class="align-middle fw-semibold small">{{ tx.user.username }}</td>
+                                <td class="align-middle">
+                                    {% if tx.operation_type == 'IN' or tx.operation_type == 'CREATE' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success">IN / NEW</span>
+                                    {% elif tx.operation_type == 'OUT' or tx.operation_type == 'DELETE' %}
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">OUT / DEL</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary">EDIT</span>
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle text-dark"><code>{{ tx.product.sku }}</code></td>
+                                <td class="align-middle small text-muted">
+                                    Pkg: {% if tx.packages_affected > 0 %}+{% endif %}{{ tx.packages_affected }} | 
+                                    Units: {% if tx.units_affected > 0 %}+{% endif %}{{ tx.units_affected }}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No recent activity found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estilo extra para el efecto "Hover" en las tarjetas -->
+<style>
+    .transition-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .transition-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

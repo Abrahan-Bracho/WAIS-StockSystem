@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions - WAIS StockSystem{% endblock %}
+
+{% block content %}
+
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h2 class="fw-bold">Audit Trail</h2>
+        <p class="text-muted">Track all inventory movements, updates, and user actions.</p>
+    </div>
+    <div class="col-md-4">
+        <form action="{{ url_for('transactions') }}" method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control shadow-sm" placeholder="Search SKU, User, Action..."
+                value="{{ search_word }}">
+            <button type="submit" class="btn btn-primary ms-2 shadow-sm">Search</button>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col" class="ps-4">Date & Time</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Operation</th>
+                        <th scope="col">Product SKU</th>
+                        <th scope="col" class="text-center">Packages Affected</th>
+                        <th scope="col" class="text-center pe-4">Units Affected</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in pagination.items %}
+                    <tr>
+                        <td class="ps-4 align-middle text-muted">{{ tx.timestamp | localtime }}</td>
+                        <td class="align-middle fw-semibold">{{ tx.user.username }}</td>
+
+                        <td class="align-middle">
+                            {% if tx.operation_type == 'IN' %}
+                            <span class="badge bg-success">IN</span>
+                            {% elif tx.operation_type == 'OUT' %}
+                            <span class="badge bg-danger">OUT</span>
+                            {% else %}
+                            <span class="badge bg-secondary">{{ tx.operation_type }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="align-middle"><code>{{ tx.product.sku }}</code></td>
+
+                        <td class="text-center align-middle">
+                            {% if tx.packages_affected > 0 %}+{% endif %}{{ tx.packages_affected }}
+                        </td>
+                        <td class="text-center pe-4 align-middle">
+                            {% if tx.units_affected > 0 %}+{% endif %}{{ tx.units_affected }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <h5 class="fw-normal">No transactions recorded yet.</h5>
+                            <p class="mb-0">Movements will appear here automatically.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+        <div class="card-footer bg-white py-3">
+            <nav aria-label="Transaction pagination">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('transactions', page=pagination.prev_num, search=search_word) }}">Previous</a>
+                    </li>
+
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2,
+                    right_current=2) %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('transactions', page=page_num, search=search_word) }}">{{
+                            page_num
+                            }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('transactions', page=pagination.next_num, search=search_word) }}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

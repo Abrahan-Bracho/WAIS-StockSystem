@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Test Page - WAIS{% endblock %}
+
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Test product</h1>
+
+    <form action="/test" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+        <div class="row text-center mb-3 text-muted">
+            <div class="mb-3">
+                <label for="test_input" class="form-label">Test name</label>
+                <input type="text" class="form-control" id="test_name" name="test_name"
+                    placeholder="Enter something to test..." required>
+            </div>
+
+            <div class="mb-3">
+                <label for="test_sku" class="form-label">Test sku</label>
+                <input type="text" class="form-control" id="test_sku" name="test_sku"
+                    placeholder="Enter something to test..." required>
+            </div>
+
+            <div class="mb-3">
+                <label for="test_notes" class="form-label">Test notes</label>
+                <input type="text" class="form-control" id="test_notes" name="test_notes"
+                    placeholder="Enter something to test..." required>
+            </div>
+
+            
+            <div class="mb-3">
+                <label for="test_min" class="form-label">Test minimum</label>
+                <input type="text" class="form-control" id="test_min" name="test_min"
+                    placeholder="Enter something to test..." required>
+            </div>
+
+            <div class="mb-3">
+                <label for="test_units" class="form-label">Test units</label>
+                <input type="number" class="form-control" id="test_units" name="test_units"
+                    placeholder="Enter something to test..." required>
+            </div>
+
+            <div class="mb-3">
+                <label for="test_packages" class="form-label">Test packages</label>
+                <input type="number" class="form-control" id="test_packages" name="test_packages"
+                    placeholder="Enter something to test..." required>
+            </div>
+
+            <div class="mb-3">
+                <label for="test_u_packages" class="form-label">Test units</label>
+                <input type="number" class="form-control" id="test_u_packages" name="test_u_packages"
+                    placeholder="Enter something to test..." required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit Test</button>
+
+
+        </div>
+
+    </form>
+
+</div>
+
+<div class="container mt-5">
+    <hr class="mb-5">
+    <h2 class="mb-4">productos en la base de datos:</h2>
+    <ul class="list-group">
+        {% for item in productos %}
+        
+        <li class="list-group-item">
+            <strong> {{item.name}} </strong>
+            <span class="text-muted">SKU: {{item.sku}}</span>
+            -Stok: {{item.single_units}}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}

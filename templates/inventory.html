@@ -1,0 +1,454 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory - WAIS StockSystem{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-4">
+        <h2 class="fw-bold mb-0">Current Inventory</h2>
+        <p class="text-muted mb-0">Manage your stock.</p>
+    </div>
+
+    <div class="col-md-5">
+        <form action="{{ url_for('inventory') }}" method="GET" class="d-flex">
+            <input type="text" name="search" class="form-control shadow-sm" placeholder="Search by Name or SKU..."
+                value="{{ search_word }}">
+            <button type="submit" class="btn btn-primary ms-2 shadow-sm">Search</button>
+        </form>
+    </div>
+
+    <!-- Botón para abrir el nuevo modal de carga masiva -->
+    {% if session.get('role') in ['Manager', 'Supervisor'] %}
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bulkAddModal">+ Bulk Add</button>
+    {% endif %}
+
+</div>
+
+<!-- Actualización del Modal Bulk Add -->
+<div class="modal fade" id="bulkAddModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <form action="/add_product_bulk" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table" id="bulkTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>SKU / ITEM</th>
+                                    <th>Loc / Notes</th>
+                                    <th>Low Stock Alert</th>
+                                    <th>Package </th>
+                                    <th>Unit / Package</th>
+                                    <th>Unit / Stands</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="product-row">
+                                    <td data-label="Name"><input type="text" name="name[]" class="form-control"
+                                            required></td>
+                                    <td data-label="SKU"><input type="text" name="sku[]" class="form-control" required>
+                                    </td>
+                                    <td data-label="Loc"><input type="text" name="notes[]" class="form-control"></td>
+
+                                    <td data-label="Low Stock Alert"><input type="number" name="min_stock[]" class="form-control border-warning"  min="0" placeholder=" 0 disable"></td>
+                                    
+                                    <td data-label="Pkg"><input type="number" name="packages[]" class="form-control"
+                                            value="0"></td>
+                                    <td data-label="U/Pkg"><input type="number" name="units_per_package[]"
+                                            class="form-control" value="0"></td>
+                                    <td data-label="Unit"><input type="number" name="single_units[]"
+                                            class="form-control" value="0"></td>
+                                    <td><button type="button" class="btn btn-outline-danger w-100"
+                                            onclick="removeRow(this)">Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addRow()">+ Add Another Row</button>
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-primary">Save All</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addRow() {
+        const tbody = document.querySelector("#bulkTable tbody");
+        const newRow = tbody.rows[0].cloneNode(true);
+        // Limpiar valores del clon
+        newRow.querySelectorAll('input').forEach(input => input.value = '');
+        tbody.appendChild(newRow);
+    }
+
+    function removeRow(btn) {
+        const row = btn.parentNode.parentNode;
+        const tbody = document.querySelector("#bulkTable tbody");
+        // Solo permitimos borrar si hay más de una fila
+        if (tbody.rows.length > 1) {
+            row.parentNode.removeChild(row);
+        } else {
+            alert("You must keep at least one row.");
+        }
+    }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+
+                        <!-- BOTÓN: Product Name -->
+                        <th scope="col" class="sortable-header">
+                            {% set next_order = 'desc' if sort_by == 'name' and order == 'asc' else 'asc' %}
+                            <a href="{{ url_for('inventory', search=search_word, sort_by='name', order=next_order) }}"
+                                class="sortable-link">
+                                Product Name {% if sort_by == 'name' %} {{ '▲' if order == 'asc' else '▼' }} {% endif %}
+                            </a>
+                        </th>
+
+                        <!-- BOTÓN: SKU -->
+                        <th scope="col" class="ps-3 sortable-header">
+                            {% set next_order = 'desc' if sort_by == 'sku' and order == 'asc' else 'asc' %}
+                            <a href="{{ url_for('inventory', search=search_word, sort_by='sku', order=next_order) }}"
+                                class="sortable-link">
+                                SKU {% if sort_by == 'sku' %} {{ '▲' if order == 'asc' else '▼' }} {% endif %}
+                            </a>
+                        </th>
+
+
+                        <!-- NO INTERACTUABLE: Location -->
+                        <th scope="col" class="d-none d-lg-table-cell align-middle">Location / Notes</th>
+
+                        <!-- BOTÓN: Packages -->
+                        <th scope="col" class="text-center d-none d-md-table-cell sortable-header">
+                            {% set next_order = 'desc' if sort_by == 'packages' and order == 'asc' else 'asc' %}
+                            <a href="{{ url_for('inventory', search=search_word, sort_by='packages', order=next_order) }}"
+                                class="sortable-link">
+                                Packages {% if sort_by == 'packages' %} {{ '▲' if order == 'asc' else '▼' }} {% endif %}
+                            </a>
+                        </th>
+
+                        <!-- NO INTERACTUABLE: Units/Pkg -->
+                        <th scope="col" class="text-center d-none d-md-table-cell text-white align-middle">Units/Pkg
+                        </th>
+
+                        <!-- BOTÓN: Single Units -->
+                        <th scope="col" class="text-center d-none d-md-table-cell sortable-header">
+                            {% set next_order = 'desc' if sort_by == 'single_units' and order == 'asc' else 'asc' %}
+                            <a href="{{ url_for('inventory', search=search_word, sort_by='single_units', order=next_order) }}"
+                                class="sortable-link">
+                                Single Units {% if sort_by == 'single_units' %} {{ '▲' if order == 'asc' else '▼' }} {%
+                                endif %}
+                            </a>
+                        </th>
+
+                        <!-- BOTÓN: Total Stock -->
+                        <th scope="col" class="text-center fw-bold sortable-header">
+                            {% set next_order = 'desc' if sort_by == 'total' and order == 'asc' else 'asc' %}
+                            <a href="{{ url_for('inventory', search=search_word, sort_by='total', order=next_order) }}"
+                                class="sortable-link">
+                                Total Stock {% if sort_by == 'total' %} {{ '▲' if order == 'asc' else '▼' }} {% endif %}
+                            </a>
+                        </th>
+
+                        <!-- NO INTERACTUABLE: Actions -->
+                        <th scope="col" class="text-center pe-3 text-white align-middle">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in pagination.items %}
+                    {% set total_stock = (product.packages * product.units_per_package) + product.single_units %}
+                    {% set is_low_stock = product.min_stock > 0 and total_stock <= product.min_stock %} <tr
+                        class="{% if is_low_stock %}table-warning{% endif %}">
+
+                        <td class="align-middle fw-semibold">{{ product.name }}</td>
+
+
+                        <td class="ps-3 align-middle">
+                            <code>{{ product.sku }}</code>
+                            <!-- Icono de alerta extra si está bajo -->
+                            {% if is_low_stock %}
+                            <span class="badge bg-danger ms-1" title="Low Stock Alert!">⚠️</span>
+                            {% endif %}
+                        </td>
+
+
+
+                        <td class="align-middle text-muted d-none d-lg-table-cell">
+                            <small>{{ product.notes or '---' }}</small>
+                        </td>
+
+                        <td class="text-center align-middle d-none d-md-table-cell">{{ product.packages }}</td>
+                        <td class="text-center align-middle text-muted d-none d-md-table-cell">{{
+                            product.units_per_package }}</td>
+                        <td class="text-center align-middle d-none d-md-table-cell">{{ product.single_units }}</td>
+
+                        <td class="text-center align-middle fw-bold text-success">
+                            {{ (product.packages * product.units_per_package) + product.single_units }}
+                        </td>
+
+                        <td class="text-center pe-3 align-middle">
+                            <!-- Botón de More para móviles siempre visible -->
+                            <button class="btn btn-sm btn-primary d-md-none" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseDetails{{ product.id }}">
+                                More ▾
+                            </button>
+
+                            <!-- Solo Gerentes y Supervisores ven Editar/Borrar -->
+                            {% if session.get('role') in ['Manager', 'Supervisor'] %}
+                            <div class="btn-group btn-group-sm d-none d-md-inline-flex" role="group">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal"
+                                    data-bs-target="#editProductModal{{ product.id }}">Edit</button>
+
+                                <a href="{{ url_for('delete_product', id=product.id) }}" class="btn btn-outline-danger"
+                                    onclick="return confirm('Are you sure you want to delete {{ product.name }}?');">Delete</a>
+                            </div>
+                            {% else %}
+                            <span class="badge bg-secondary d-none d-md-inline-block">View Only</span>
+                            {% endif %}
+                        </td>
+                        </td>
+                        </tr>
+
+                        <tr class="d-md-none">
+                            <td colspan="4" class="p-0 border-0">
+
+                                <div class="collapse" id="collapseDetails{{ product.id }}">
+
+                                    <div class="bg-light p-3 border-bottom">
+                                        <div class="row text-center mb-3 text-muted">
+                                            <!-- NUEVO: Notas en versión móvil -->
+                                            <div class="bg-white p-3 border-bottom text-start">
+                                                <small class="d-block text-muted mb-1">Location / Notes</small>
+                                                <span class="text-dark">{{ product.notes or 'No notes added' }}</span>
+                                            </div>
+                                            <div class="col-4 border-end">
+                                                <small class="d-block">Packages</small>
+                                                <strong>{{ product.packages }}</strong>
+                                            </div>
+                                            <div class="col-4 border-end">
+                                                <small class="d-block">Units/Pkg</small>
+                                                <strong>{{ product.units_per_package }}</strong>
+                                            </div>
+                                            <div class="col-4">
+                                                <small class="d-block">Single</small>
+                                                <strong>{{ product.single_units }}</strong>
+                                            </div>
+                                        </div>
+
+                                        {% if session.get('role') in ['Manager', 'Supervisor'] %}
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editProductModal{{ product.id }}">Edit Product</button>
+                                            <a href="{{ url_for('delete_product', id=product.id) }}"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Are you sure you want to delete {{ product.name }}?');">Delete
+                                                Product</a>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </td>
+                        </tr>
+
+
+                        <div class="modal fade text-start" id="editProductModal{{ product.id }}" tabindex="-1"
+                            aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title fw-bold">Edit Product</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+
+                                    <form action="{{ url_for('edit_product', id=product.id) }}" method="POST">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Product Name</label>
+                                                <input type="text" class="form-control" name="name"
+                                                    value="{{ product.name }}" required>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">SKU / Barcode</label>
+                                                <input type="text" class="form-control" name="sku"
+                                                    value="{{ product.sku }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Location / Notes (Optional)</label>
+                                                <input type="text" class="form-control" name="notes"
+                                                    value="{{ product.notes }}">
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label text-warning fw-bold">Low Stock Alert
+                                                    Level</label>
+                                                <input type="number" class="form-control border-warning"
+                                                    name="min_stock" value="{{ product.min_stock }}" min="0"
+                                                    placeholder="Alert me when stock drops below...">
+                                                <div class="form-text">Set to 0 to disable alerts for this item.</div>
+                                            </div>
+
+
+                                            <hr class="my-4">
+                                            <h6 class="text-muted mb-3">Adjust Stock</h6>
+
+                                            <div class="row">
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">Packages</label>
+                                                    <input type="number" class="form-control" name="packages"
+                                                        value="{{ product.packages }}" min="0">
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">Units/Pkg</label>
+                                                    <input type="number" class="form-control" name="units_per_package"
+                                                        value="{{ product.units_per_package }}" min="0">
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">Single Units</label>
+                                                    <input type="number" class="form-control" name="single_units"
+                                                        value="{{ product.single_units }}" min="0">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-success">Update Product</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <h5 class="fw-normal">No products found in inventory.</h5>
+                                <p class="mb-0">Click the "Add New Product" button to get started.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white py-3">
+            <nav aria-label="Inventory pagination">
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+
+                    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('inventory', page=pagination.prev_num, search=search_word, sort_by=sort_by, order=order) }}">Previous</a>
+                    </li>
+
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
+                    %}
+                    {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('inventory', page=page_num, search=search_word, sort_by=sort_by, order=order) }}">{{
+                            page_num }}</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                    {% endif %}
+                    {% endfor %}
+
+                    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                        <a class="page-link"
+                            href="{{ url_for('inventory', page=pagination.next_num, search=search_word, sort_by=sort_by, order=order) }}">Next</a>
+                    </li>
+
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+
+<!-- Estilos para las cabeceras interactivas (Affordance) -->
+<style>
+    /* Gris ligeramente más claro que el fondo negro de table-dark */
+    .sortable-header {
+        background-color: #343a40 !important;
+        transition: background-color 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+    /* Efecto de iluminación al pasar el ratón por encima (hover) */
+    .sortable-header:hover {
+        background-color: #495057 !important;
+    }
+
+    /* Hacemos que el enlace se comporte como un bloque que llena el espacio */
+    .sortable-link {
+        display: block;
+        width: 100%;
+        color: #ffffff !important;
+        text-decoration: none;
+    }
+</style>
+<style>
+    /* Estilos para móviles: Convertimos las celdas en bloques */
+    @media (max-width: 768px) {
+        #bulkTable thead {
+            display: none;
+        }
+
+        /* Ocultamos cabeceras en móvil */
+        #bulkTable,
+        #bulkTable tbody,
+        #bulkTable tr,
+        #bulkTable td {
+            display: block;
+            width: 100%;
+        }
+
+        #bulkTable tr {
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+
+        #bulkTable td {
+            text-align: left;
+            padding: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Añadimos etiquetas antes de cada input para que el usuario sepa qué es qué */
+        #bulkTable td::before {
+            content: attr(data-label);
+            width: 40%;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+{% endblock %}
