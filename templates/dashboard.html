@@ -12,30 +12,30 @@
 </div>
 
 <!-- ========================================== -->
-<!-- TARJETAS DE ACCESO RÁPIDO Y ESTADÍSTICAS   -->
+<!-- QUICK ACCESS CARDS & STATS                 -->
 <!-- ========================================== -->
 <div class="row mb-4">
     
-    <!-- Tarjeta: Inventario -->
+    <!-- Card: Inventory -->
     <div class="col-md-4 mb-3">
         <a href="{{ url_for('inventory') }}" class="text-decoration-none">
             <div class="card shadow-sm h-100 border-0 border-start border-primary border-4 text-center p-3 table-hover transition-card">
                 <div class="card-body">
                     
-                    <!-- LÓGICA DE ICONO EXTERNO + FALLBACK -->
+                    <!-- Icon with emoji fallback if external image fails to load -->
                     <div class="mb-3" style="height: 64px;">
                         <!-- Reemplaza el src con el link directo al .png o .svg -->
                         <img src="https://images.icon-icons.com/945/PNG/512/Office_-12_icon-icons.com_73953.png" 
                              alt="Inventory" style="width: 64px; height: 64px;"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         
-                        <!-- Este emoji está oculto por defecto, solo se muestra si el onerror se activa -->
+                        <!-- Emoji fallback, shown only if the image above fails -->
                         <h1 class="display-4 text-primary mb-0" style="display: none;">📦</h1>
                     </div>
 
                     <h5 class="card-title fw-bold text-dark">Inventory</h5>
                     
-                    <!-- Estadística insertada aquí -->
+                    <!-- Live stat badge -->
                     <span class="badge bg-primary mb-2">{{ total_products }} Active Items</span>
                     
                     <p class="card-text text-muted small">Manage products, stock levels, and SKUs.</p>
@@ -44,7 +44,7 @@
         </a>
     </div>
 
-    <!-- Tarjeta: Transacciones -->
+    <!-- Card: Audit Trail -->
     <div class="col-md-4 mb-3">
         <a href="{{ url_for('transactions') }}" class="text-decoration-none">
             <div class="card shadow-sm h-100 border-0 border-start border-success border-4 text-center p-3 table-hover transition-card">
@@ -65,7 +65,7 @@
         </a>
     </div>
 
-    <!-- Tarjeta: Staff (Protegida por RBAC) -->
+    <!-- Card: Staff Management (Manager/Supervisor only) -->
     {% if session.get('role') in ['Manager', 'Supervisor'] %}
     <div class="col-md-4 mb-3">
         <a href="{{ url_for('workers') }}" class="text-decoration-none">
@@ -105,7 +105,7 @@
     </div>
 </div>
 <!-- ========================================== -->
-<!-- SECCIÓN: ÚLTIMOS 10 MOVIMIENTOS            -->
+<!-- RECENT ACTIVITY (last 10 transactions)     -->
 <!-- ========================================== -->
 <div class="row">
     <div class="col-12">
@@ -129,7 +129,6 @@
                         <tbody>
                             {% for tx in transactions %}
                             <tr>
-                                <!-- Reutilizamos tu excelente filtro localtime de ayer -->
                                 <td class="ps-4 align-middle text-muted small">{{ tx.timestamp | localtime }}</td>
                                 <td class="align-middle fw-semibold small">{{ tx.user.username }}</td>
                                 <td class="align-middle">
@@ -162,7 +161,7 @@
     </div>
 </div>
 
-<!-- Estilo extra para el efecto "Hover" en las tarjetas -->
+<!-- Card hover lift effect -->
 <style>
     .transition-card {
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;

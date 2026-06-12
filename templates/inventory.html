@@ -17,14 +17,13 @@
         </form>
     </div>
 
-    <!-- Botón para abrir el nuevo modal de carga masiva -->
     {% if session.get('role') in ['Manager', 'Supervisor'] %}
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#bulkAddModal">+ Bulk Add</button>
     {% endif %}
 
 </div>
 
-<!-- Actualización del Modal Bulk Add -->
+<!-- Bulk Add Modal -->
 <div class="modal fade" id="bulkAddModal" tabindex="-1">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -79,7 +78,7 @@
     function addRow() {
         const tbody = document.querySelector("#bulkTable tbody");
         const newRow = tbody.rows[0].cloneNode(true);
-        // Limpiar valores del clon
+        // Clear input values from the cloned row
         newRow.querySelectorAll('input').forEach(input => input.value = '');
         tbody.appendChild(newRow);
     }
@@ -87,7 +86,7 @@
     function removeRow(btn) {
         const row = btn.parentNode.parentNode;
         const tbody = document.querySelector("#bulkTable tbody");
-        // Solo permitimos borrar si hay más de una fila
+        // Keep at least one row in the table at all times
         if (tbody.rows.length > 1) {
             row.parentNode.removeChild(row);
         } else {
@@ -115,7 +114,7 @@
                 <thead class="table-dark">
                     <tr>
 
-                        <!-- BOTÓN: Product Name -->
+                        <!-- Sortable: Product Name -->
                         <th scope="col" class="sortable-header">
                             {% set next_order = 'desc' if sort_by == 'name' and order == 'asc' else 'asc' %}
                             <a href="{{ url_for('inventory', search=search_word, sort_by='name', order=next_order) }}"
@@ -124,7 +123,7 @@
                             </a>
                         </th>
 
-                        <!-- BOTÓN: SKU -->
+                        <!-- Sortable: SKU -->
                         <th scope="col" class="ps-3 sortable-header">
                             {% set next_order = 'desc' if sort_by == 'sku' and order == 'asc' else 'asc' %}
                             <a href="{{ url_for('inventory', search=search_word, sort_by='sku', order=next_order) }}"
@@ -134,10 +133,10 @@
                         </th>
 
 
-                        <!-- NO INTERACTUABLE: Location -->
+                        <!-- Non-sortable: Location -->
                         <th scope="col" class="d-none d-lg-table-cell align-middle">Location / Notes</th>
 
-                        <!-- BOTÓN: Packages -->
+                        <!-- Sortable: Packages -->
                         <th scope="col" class="text-center d-none d-md-table-cell sortable-header">
                             {% set next_order = 'desc' if sort_by == 'packages' and order == 'asc' else 'asc' %}
                             <a href="{{ url_for('inventory', search=search_word, sort_by='packages', order=next_order) }}"
@@ -146,11 +145,11 @@
                             </a>
                         </th>
 
-                        <!-- NO INTERACTUABLE: Units/Pkg -->
+                        <!-- Non-sortable: Units/Pkg -->
                         <th scope="col" class="text-center d-none d-md-table-cell text-white align-middle">Units/Pkg
                         </th>
 
-                        <!-- BOTÓN: Single Units -->
+                        <!-- Sortable: Single Units -->
                         <th scope="col" class="text-center d-none d-md-table-cell sortable-header">
                             {% set next_order = 'desc' if sort_by == 'single_units' and order == 'asc' else 'asc' %}
                             <a href="{{ url_for('inventory', search=search_word, sort_by='single_units', order=next_order) }}"
@@ -160,7 +159,7 @@
                             </a>
                         </th>
 
-                        <!-- BOTÓN: Total Stock -->
+                        <!-- Sortable: Total Stock -->
                         <th scope="col" class="text-center fw-bold sortable-header">
                             {% set next_order = 'desc' if sort_by == 'total' and order == 'asc' else 'asc' %}
                             <a href="{{ url_for('inventory', search=search_word, sort_by='total', order=next_order) }}"
@@ -169,7 +168,7 @@
                             </a>
                         </th>
 
-                        <!-- NO INTERACTUABLE: Actions -->
+                        <!-- Non-sortable: Actions -->
                         <th scope="col" class="text-center pe-3 text-white align-middle">Actions</th>
                     </tr>
                 </thead>
@@ -184,7 +183,7 @@
 
                         <td class="ps-3 align-middle">
                             <code>{{ product.sku }}</code>
-                            <!-- Icono de alerta extra si está bajo -->
+                            <!-- Show warning badge if product is below min_stock threshold -->
                             {% if is_low_stock %}
                             <span class="badge bg-danger ms-1" title="Low Stock Alert!">⚠️</span>
                             {% endif %}
@@ -206,13 +205,13 @@
                         </td>
 
                         <td class="text-center pe-3 align-middle">
-                            <!-- Botón de More para móviles siempre visible -->
+                            <!-- Mobile-only expand button (desktop shows buttons inline) -->
                             <button class="btn btn-sm btn-primary d-md-none" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapseDetails{{ product.id }}">
                                 More ▾
                             </button>
 
-                            <!-- Solo Gerentes y Supervisores ven Editar/Borrar -->
+                            <!-- Edit/Delete buttons are hidden from Warehouse Workers (RBAC) -->
                             {% if session.get('role') in ['Manager', 'Supervisor'] %}
                             <div class="btn-group btn-group-sm d-none d-md-inline-flex" role="group">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal"
@@ -235,7 +234,7 @@
 
                                     <div class="bg-light p-3 border-bottom">
                                         <div class="row text-center mb-3 text-muted">
-                                            <!-- NUEVO: Notas en versión móvil -->
+                                            <!-- Notes row in mobile expanded view -->
                                             <div class="bg-white p-3 border-bottom text-start">
                                                 <small class="d-block text-muted mb-1">Location / Notes</small>
                                                 <span class="text-dark">{{ product.notes or 'No notes added' }}</span>
@@ -389,21 +388,21 @@
 </div>
 
 
-<!-- Estilos para las cabeceras interactivas (Affordance) -->
+<!-- Sortable header styles: hover highlight and full-width link clickable area -->
 <style>
-    /* Gris ligeramente más claro que el fondo negro de table-dark */
+    /* Slightly lighter than table-dark background */
     .sortable-header {
         background-color: #343a40 !important;
         transition: background-color 0.2s ease-in-out;
         cursor: pointer;
     }
 
-    /* Efecto de iluminación al pasar el ratón por encima (hover) */
+    /* Highlight on hover */
     .sortable-header:hover {
         background-color: #495057 !important;
     }
 
-    /* Hacemos que el enlace se comporte como un bloque que llena el espacio */
+    /* Makes the entire cell clickable, not just the text */
     .sortable-link {
         display: block;
         width: 100%;
@@ -412,13 +411,12 @@
     }
 </style>
 <style>
-    /* Estilos para móviles: Convertimos las celdas en bloques */
+    /* Mobile: stack table cells as blocks for the bulk add form */
     @media (max-width: 768px) {
         #bulkTable thead {
             display: none;
         }
 
-        /* Ocultamos cabeceras en móvil */
         #bulkTable,
         #bulkTable tbody,
         #bulkTable tr,
@@ -442,7 +440,7 @@
             align-items: center;
         }
 
-        /* Añadimos etiquetas antes de cada input para que el usuario sepa qué es qué */
+        /* Prepend data-label as a pseudo-element so inputs are labelled on mobile */
         #bulkTable td::before {
             content: attr(data-label);
             width: 40%;
