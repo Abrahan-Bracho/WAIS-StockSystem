@@ -9,7 +9,6 @@ from datetime import timedelta
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-
 load_dotenv()
 USERNAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 
@@ -588,3 +587,6 @@ def low_stock_report():
     ).all()
 
     return render_template('low_stock_report.html', products=low_stock_products)
+
+
+
