@@ -1,4 +1,5 @@
 import os
+import re
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from functools import wraps
@@ -9,9 +10,10 @@ from flask_wtf.csrf import CSRFProtect
 
 # 1. Cargar las variables del archivo .env al sistema
 load_dotenv()
-
+USERNAME_REGEX = re.compile(r'^[a-zA-Z0-9_-]+$')
 # Inicializamos la aplicación Flask
 app = Flask(__name__)
+
 
 # 2. Configuración básica de seguridad extrayendo el valor de la variable
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
@@ -177,9 +179,9 @@ def index():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        company_name = request.form.get('company_name')
-        username = request.form.get('username')
-        password = request.form.get('password')
+        company_name = request.form.get('company_name').strip()
+        username = request.form.get('username').strip()
+        password = request.form.get('password').strip()
 
         if not company_name or not username or not password:
             flash('All fields are required.', 'danger')
@@ -233,8 +235,8 @@ def login():
     session.clear()
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username').strip()
+        password = request.form.get('password').strip()
 
         # 1. Validación: Comprobar campos vacíos
         if not username or not password:
@@ -359,7 +361,7 @@ def add_product_bulk():
     packages = request.form.getlist('packages[]')
     units_pkg = request.form.getlist('units_per_package[]')
     singles = request.form.getlist('single_units[]')
-    min_stocks = request.form.getlist('min_stock[]') # <--- NUEVA LISTA
+    min_stocks = request.form.getlist('min_stock[]')
 
     try:
         for i in range(len(names)):
@@ -409,7 +411,7 @@ def edit_product(id):
         
         product.name = request.form.get('name')
         product.sku = request.form.get('sku')
-        product.notes = request.form.get('notes') 
+        product.notes = request.form.get('notes')
         product.min_stock = int(request.form.get('min_stock') or 0)
         product.units_per_package = int(request.form.get('units_per_package') or 0)
         product.packages = new_packages
@@ -574,8 +576,8 @@ def add_worker():
         flash('Access Denied: This area is restricted to Management only.', 'danger')
         return redirect(url_for('inventory'))
 
-    username = request.form.get('username')
-    password = request.form.get('password')
+    username = request.form.get('username').strip()
+    password = request.form.get('password').strip()
     role = request.form.get('role')
     
     if not username or not password or not role:
@@ -623,9 +625,9 @@ def edit_worker(id):
         flash('Unauthorized action.', 'danger')
         return redirect(url_for('workers'))
     
-    new_username = request.form.get('username')
-    new_role = request.form.get('role')
-    new_password = request.form.get('password')
+    new_username = request.form.get('username').strip()
+    new_role = request.form.get('role').strip()
+    new_password = request.form.get('password').strip()
     
     existing_user = User.query.filter(User.username == new_username, User.id != id).first()
     if existing_user:
