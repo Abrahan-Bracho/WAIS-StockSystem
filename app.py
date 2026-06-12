@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
@@ -5,17 +7,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
 from flask_wtf.csrf import CSRFProtect
 
+# 1. Cargar las variables del archivo .env al sistema
+load_dotenv()
 
 # Inicializamos la aplicación Flask
 app = Flask(__name__)
 
-# Configuración básica de seguridad y base de datos
-# SECRET_KEY es necesaria para proteger las sesiones de los usuarios (login)
-app.config['SECRET_KEY'] = 'development-secret-key-cs50'
+# 2. Configuración básica de seguridad extrayendo el valor de la variable
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
-# Actualizamos el nombre del archivo de la base de datos a 'inventory.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///inventory.db'
+# 3. Actualizamos la URI apuntando a la variable de entorno
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializamos SQLAlchemy
@@ -23,7 +26,8 @@ db = SQLAlchemy(app)
 
 csrf = CSRFProtect(app)
 
-
+#--------------------------------------------------------
+# ... (el resto de tu código queda exactamente igual) ...
 
 #--------------------------------------------------------
 
