@@ -23,12 +23,11 @@
                 <div class="card-body">
                     
                     <!-- Icon with emoji fallback if external image fails to load -->
-                    <div class="mb-3" style="height: 64px;">
-                        <!-- Reemplaza el src con el link directo al .png o .svg -->
-                        <img src="https://images.icon-icons.com/945/PNG/512/Office_-12_icon-icons.com_73953.png" 
-                             alt="Inventory" style="width: 64px; height: 64px;"
+                    <div class="mb-3 card-icon-container">
+                        <img src="https://images.icon-icons.com/945/PNG/512/Office_-12_icon-icons.com_73953.png"
+                             alt="Inventory" class="card-icon-img"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                        
+
                         <!-- Emoji fallback, shown only if the image above fails -->
                         <h1 class="display-4 text-primary mb-0" style="display: none;">📦</h1>
                     </div>
@@ -50,9 +49,9 @@
             <div class="card shadow-sm h-100 border-0 border-start border-success border-4 text-center p-3 table-hover transition-card">
                 <div class="card-body">
                     
-                    <div class="mb-3" style="height: 64px;">
-                        <img src="https://images.icon-icons.com/47/PNG/128/files_manager_history_10109.png" 
-                             alt="Audit Trail" style="width: 64px; height: 64px;"
+                    <div class="mb-3 card-icon-container">
+                        <img src="https://images.icon-icons.com/47/PNG/128/files_manager_history_10109.png"
+                             alt="Audit Trail" class="card-icon-img"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <h1 class="display-4 text-success mb-0" style="display: none;">🔄</h1>
                     </div>
@@ -72,9 +71,9 @@
             <div class="card shadow-sm h-100 border-0 border-start border-dark border-4 text-center p-3 table-hover transition-card">
                 <div class="card-body">
                     
-                    <div class="mb-3" style="height: 64px;">
-                        <img src="https://images.icon-icons.com/632/PNG/512/users_icon-icons.com_57999.png" 
-                             alt="Staff" style="width: 64px; height: 64px;"
+                    <div class="mb-3 card-icon-container">
+                        <img src="https://images.icon-icons.com/632/PNG/512/users_icon-icons.com_57999.png"
+                             alt="Staff" class="card-icon-img"
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                         <h1 class="display-4 text-dark mb-0" style="display: none;">👥</h1>
                     </div>
@@ -161,15 +160,4 @@
     </div>
 </div>
 
-<!-- Card hover lift effect -->
-<style>
-    .transition-card {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-    .transition-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        cursor: pointer;
-    }
-</style>
 {% endblock %}

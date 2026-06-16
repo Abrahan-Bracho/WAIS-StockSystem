@@ -74,26 +74,6 @@
     </div>
 </div>
 
-<script>
-    function addRow() {
-        const tbody = document.querySelector("#bulkTable tbody");
-        const newRow = tbody.rows[0].cloneNode(true);
-        // Clear input values from the cloned row
-        newRow.querySelectorAll('input').forEach(input => input.value = '');
-        tbody.appendChild(newRow);
-    }
-
-    function removeRow(btn) {
-        const row = btn.parentNode.parentNode;
-        const tbody = document.querySelector("#bulkTable tbody");
-        // Keep at least one row in the table at all times
-        if (tbody.rows.length > 1) {
-            row.parentNode.removeChild(row);
-        } else {
-            alert("You must keep at least one row.");
-        }
-    }
-</script>
 
 
 
@@ -388,65 +368,4 @@
 </div>
 
 
-<!-- Sortable header styles: hover highlight and full-width link clickable area -->
-<style>
-    /* Slightly lighter than table-dark background */
-    .sortable-header {
-        background-color: #343a40 !important;
-        transition: background-color 0.2s ease-in-out;
-        cursor: pointer;
-    }
-
-    /* Highlight on hover */
-    .sortable-header:hover {
-        background-color: #495057 !important;
-    }
-
-    /* Makes the entire cell clickable, not just the text */
-    .sortable-link {
-        display: block;
-        width: 100%;
-        color: #ffffff !important;
-        text-decoration: none;
-    }
-</style>
-<style>
-    /* Mobile: stack table cells as blocks for the bulk add form */
-    @media (max-width: 768px) {
-        #bulkTable thead {
-            display: none;
-        }
-
-        #bulkTable,
-        #bulkTable tbody,
-        #bulkTable tr,
-        #bulkTable td {
-            display: block;
-            width: 100%;
-        }
-
-        #bulkTable tr {
-            margin-bottom: 1rem;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 10px;
-            background: #f8f9fa;
-        }
-
-        #bulkTable td {
-            text-align: left;
-            padding: 5px 0;
-            display: flex;
-            align-items: center;
-        }
-
-        /* Prepend data-label as a pseudo-element so inputs are labelled on mobile */
-        #bulkTable td::before {
-            content: attr(data-label);
-            width: 40%;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-    }
-</style>
 {% endblock %}

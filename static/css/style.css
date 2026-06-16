@@ -1,0 +1,113 @@
+/* ================================================
+   WAIS StockSystem — Global Stylesheet
+   ================================================ */
+
+/* --- Navbar --- */
+.navbar-logo {
+    height: 40px;
+    width: auto;
+}
+
+/* --- Footer --- */
+.footer-main {
+    background-color: #1a1a2e;
+}
+
+.footer-logo {
+    height: 90px;
+    width: auto;
+    margin-bottom: 12px;
+    opacity: 0.92;
+}
+
+.footer-title {
+    color: #e2e8f0;
+    font-size: 0.95rem;
+}
+
+.footer-subtitle {
+    color: #94a3b8;
+    font-size: 0.82rem;
+}
+
+.footer-link {
+    color: #4ade80;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* --- Dashboard: Card hover lift effect --- */
+.transition-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.transition-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer;
+}
+
+/* --- Dashboard: Card icon containers --- */
+.card-icon-container {
+    height: 64px;
+}
+
+.card-icon-img {
+    width: 64px;
+    height: 64px;
+}
+
+/* --- Inventory: Sortable table headers --- */
+.sortable-header {
+    background-color: #343a40 !important;
+    transition: background-color 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.sortable-header:hover {
+    background-color: #495057 !important;
+}
+
+.sortable-link {
+    display: block;
+    width: 100%;
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+/* --- Inventory: Bulk Add modal — mobile responsive table --- */
+@media (max-width: 768px) {
+    #bulkTable thead {
+        display: none;
+    }
+
+    #bulkTable,
+    #bulkTable tbody,
+    #bulkTable tr,
+    #bulkTable td {
+        display: block;
+        width: 100%;
+    }
+
+    #bulkTable tr {
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 10px;
+        background: #f8f9fa;
+    }
+
+    #bulkTable td {
+        text-align: left;
+        padding: 5px 0;
+        display: flex;
+        align-items: center;
+    }
+
+    #bulkTable td::before {
+        content: attr(data-label);
+        width: 40%;
+        font-weight: bold;
+        font-size: 0.85rem;
+    }
+}
