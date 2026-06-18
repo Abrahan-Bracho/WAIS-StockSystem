@@ -20,23 +20,23 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # SQLite concurrency: 15-second lock timeout
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-    "connect_args": {
-        "timeout": 15
-    }
-}
+# app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+#     "connect_args": {
+#         "timeout": 15
+#     }
+# }
 
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 
 
 # Enable WAL mode for better read/write concurrency on SQLite
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
-    cursor.execute("PRAGMA synchronous=NORMAL")
-    cursor.close()
+# @event.listens_for(Engine, "connect")
+# def set_sqlite_pragma(dbapi_connection, connection_record):
+#     cursor = dbapi_connection.cursor()
+#     cursor.execute("PRAGMA journal_mode=WAL")
+#     cursor.execute("PRAGMA synchronous=NORMAL")
+#     cursor.close()
 
 
 # Decorator: redirects unauthenticated users to the login page
